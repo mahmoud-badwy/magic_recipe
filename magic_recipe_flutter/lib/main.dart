@@ -1,5 +1,5 @@
-import 'package:magic_recipe_client/magic_recipe_client.dart';
 import 'package:flutter/material.dart';
+import 'package:magic_recipe_client/magic_recipe_client.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 
 /// Sets up a global client object that can be used to talk to the server from
@@ -26,18 +26,18 @@ void main() {
   client = Client(serverUrl)
     ..connectivityMonitor = FlutterConnectivityMonitor();
 
-  runApp(const MyApp());
+  runApp(const MagicRecipe());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MagicRecipe extends StatelessWidget {
+  const MagicRecipe({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Serverpod Demo',
+      title: 'Magic Recipe',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(title: 'Serverpod Example'),
+      home: const MyHomePage(title: 'Magic Recipe'),
     );
   }
 }
@@ -52,28 +52,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  /// Holds the last result or null if no result exists yet.
   String? _resultMessage;
 
-  /// Holds the last error message that we've received from the server or null
-  /// if no error exists yet.
   String? _errorMessage;
+  bool _loading = false;
 
   final _textEditingController = TextEditingController();
 
-  /// Calls the `hello` method of the `greeting` endpoint. Will set either the
-  /// `_resultMessage` or `_errorMessage` field, depending on if the call
-  /// is successful.
-  void _callHello() async {
+  void _generateRecipe() async {
     try {
-      final result = await client.greeting.hello(_textEditingController.text);
       setState(() {
         _errorMessage = null;
-        _resultMessage = result.message;
+        _resultMessage = null;
+        _loading = true;
+      });
+      final result =
+          await client.recipes.generateRecipe(_textEditingController.text);
+      setState(() {
+        _errorMessage = null;
+        _resultMessage = result;
+        _loading = false;
       });
     } catch (e) {
       setState(() {
         _errorMessage = '$e';
+        _resultMessage = null;
+        _loading = false;
       });
     }
   }
@@ -90,19 +94,26 @@ class MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: TextField(
                 controller: _textEditingController,
-                decoration: const InputDecoration(hintText: 'Enter your name'),
+                decoration: const InputDecoration(
+                    hintText: 'Enter the ingredients separated by \',\''),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: ElevatedButton(
-                onPressed: _callHello,
-                child: const Text('Send to Server'),
+                onPressed: _loading ? null : _generateRecipe,
+                child: _loading
+                    ? Center(child: CircularProgressIndicator())
+                    : const Text('Send to Server'),
               ),
             ),
-            ResultDisplay(
-              resultMessage: _resultMessage,
-              errorMessage: _errorMessage,
+            Expanded(
+              child: SingleChildScrollView(
+                child: ResultDisplay(
+                  resultMessage: _resultMessage,
+                  errorMessage: _errorMessage,
+                ),
+              ),
             ),
           ],
         ),
@@ -137,7 +148,11 @@ class ResultDisplay extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 50),
       child: Container(
-        color: backgroundColor,
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: backgroundColor,
+        ),
         child: Center(child: Text(text)),
       ),
     );

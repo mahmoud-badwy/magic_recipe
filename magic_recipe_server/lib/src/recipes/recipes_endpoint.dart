@@ -9,7 +9,7 @@ class RecipesEndpoint extends Endpoint {
     }
 
     final gemini = GenerativeModel(
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-flash-latest',
       apiKey: geminiApiKey,
     );
     final prompt =
