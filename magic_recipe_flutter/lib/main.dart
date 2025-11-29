@@ -95,7 +95,25 @@ class MyHomePageState extends State<MyHomePage> {
               child: TextField(
                 controller: _textEditingController,
                 decoration: const InputDecoration(
-                    hintText: 'Enter the ingredients separated by \',\''),
+                  hintText: 'Enter the ingredients separated by \',\'',
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(
+                        20,
+                      ),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(
+                        20,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
             Padding(
@@ -103,8 +121,8 @@ class MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _generateRecipe,
                 child: _loading
-                    ? Center(child: CircularProgressIndicator())
-                    : const Text('Send to Server'),
+                    ? const Text('loading')
+                    : const Text('Generate Recipe'),
               ),
             ),
             Expanded(
